@@ -37,10 +37,12 @@ export async function POST(req: NextRequest) {
     })
 
     // Create file for OpenAI API
-    const audioFile = await readFile(outputPath)
-    const audioUrl = await uploadToGCS(video)
+    const audioArray = await readFile(outputPath)
+    const audioFile = new File([audioArray], 'audio.mp3', { type: 'audio/mp3' })
+    const audioUrl = await uploadToGCS(audioFile,"audio")
+    
     const transcription = await openai.audio.transcriptions.create({
-      file: new File([audioFile], 'audio.mp3', { type: 'audio/mp3' }),
+      file: audioFile,
       model: "whisper-1",
     })
 
@@ -50,7 +52,7 @@ export async function POST(req: NextRequest) {
       unlink(outputPath)
     ]).catch(console.error)
 
-    return NextResponse.json({ transcription: transcription.text, audioFilePath: audioUrl })
+    return NextResponse.json({ transcription: transcription.text, audioUrl: audioUrl })
   } catch (error) {
     console.error("Error processing video:", error)
     return NextResponse.json({ error: "Error processing video" }, { status: 500 })
