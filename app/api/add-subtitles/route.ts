@@ -11,12 +11,16 @@ const execAsync = promisify(exec)
 export async function POST(req: NextRequest) {
   const formData = await req.formData()
   const video = formData.get("video") as File
-  const audioUrl = formData.get("audioUrl") as String
+  const audioUrl = formData.get("audioUrl") as string
   const transcription = formData.get("transcription") as string
+  const subtitleColor = formData.get("subtitleColor") as string
+  const subtitleFont = formData.get("subtitleFont") as string
+  const subtitlePosition = JSON.parse(formData.get("subtitlePosition") as string)
+  const subtitleColors = JSON.parse(formData.get("subtitleColors") as string)
+  const subtitleSize = parseInt(formData.get("subtitleSize") as string)
   console.log(video)
   console.log(audioUrl)
   console.log(transcription)
-
 
   if (!video || !transcription) {
     return NextResponse.json({ error: "Video and transcription are required" }, { status: 400 })
@@ -32,7 +36,15 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         video_url: videoUrl,
         audio_url: audioUrl,
-        script: transcription
+        script: transcription,
+        subtitle_style: {
+          font: subtitleFont,
+          position: {
+            x: subtitlePosition.x,
+            y: subtitlePosition.y
+          },
+          colors: subtitleColors
+        }
       }),
        // Add these options to handle SSL issues
        cache: 'no-store',

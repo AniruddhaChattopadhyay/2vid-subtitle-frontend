@@ -6,7 +6,8 @@ export default function Home() {
   const handleUpload = async (
     file: File,
     setTranscription: (text: string) => void,
-    setIsTranscribing: (value: boolean) => void
+    setIsTranscribing: (value: boolean) => void,
+    setAudioUrl: (url: string) => void
   ) => {
     const formData = new FormData();
     formData.append("video", file);
@@ -19,8 +20,9 @@ export default function Home() {
       });
       const data = await response.json();
 
-      if (data.transcription) {
+      if (data.transcription && data.audioUrl) {
         setTranscription(data.transcription);
+        setAudioUrl(data.audioUrl);
       } else if (data.error) {
         console.error("Transcription error:", data.error);
       }
