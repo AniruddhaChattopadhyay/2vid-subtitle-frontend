@@ -9,6 +9,7 @@ import {
   faPalette,
   faFont,
   faGripLines,
+  faTextHeight,
 } from "@fortawesome/free-solid-svg-icons";
 import React from "react";
 import { ChromePicker, ColorResult } from "react-color";
@@ -258,25 +259,25 @@ export default function VideoUpload({ onUpload }: VideoUploadProps) {
 
   if (!videoPreview) {
     return (
-      <div className="flex flex-col items-center justify-center mt-20">
+      <div className="flex flex-col items-center justify-center mt-8 md:mt-20 px-4">
         <div className="w-full max-w-xl">
-          <div className="bg-[#0B1120]/80 rounded-2xl p-8 backdrop-blur-sm border border-gray-800/50">
+          <div className="bg-[#0B1120]/80 rounded-2xl p-6 md:p-8 backdrop-blur-sm border border-gray-800/50">
             <div className="flex flex-col items-center justify-center text-center">
               <div className="mb-4">
                 <FontAwesomeIcon
                   icon={faUpload}
-                  className="text-3xl text-gray-400"
+                  className="text-2xl md:text-3xl text-gray-400"
                 />
               </div>
-              <h2 className="text-xl font-semibold text-white mb-2">
+              <h2 className="text-lg md:text-xl font-semibold text-white mb-2">
                 Upload Video
               </h2>
-              <p className="text-gray-400 text-sm mb-6">
+              <p className="text-gray-400 text-xs md:text-sm mb-6">
                 Choose a video to add subtitles
               </p>
 
               <label className="cursor-pointer">
-                <div className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                <div className="px-4 py-2 md:px-6 md:py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm md:text-base">
                   Select Video
                 </div>
                 <input
@@ -294,261 +295,323 @@ export default function VideoUpload({ onUpload }: VideoUploadProps) {
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto bg-gray-800/30 rounded-2xl backdrop-blur-sm border border-gray-700">
-      <div className="grid lg:grid-cols-2 gap-6 p-6">
-        {/* Left side - Video Preview Section */}
-        <div className="space-y-6">
-          <div className="aspect-video bg-black rounded-lg overflow-hidden relative">
-            <video
-              key={videoPreview}
-              src={subtitledVideoUrl || videoPreview}
-              className="w-full h-full"
-              controls
-              controlsList="nodownload"
-            />
+    <div className="w-full max-w-6xl mx-auto space-y-6">
+      {/* Top section with video and customization */}
+      <div className="bg-gray-800/30 rounded-2xl backdrop-blur-sm border border-gray-700">
+        <div className="grid md:grid-cols-2 gap-6 p-4 md:p-6">
+          {/* Left side - Video Preview Section */}
+          <div className="space-y-4 md:space-y-6">
+            <div className="aspect-video bg-black rounded-lg overflow-hidden relative">
+              <video
+                key={videoPreview}
+                src={subtitledVideoUrl || videoPreview}
+                className="w-full h-full"
+                controls
+                controlsList="nodownload"
+              />
 
-            {!subtitledVideoUrl && (
-              <Draggable
-                position={subtitlePosition}
-                onDrag={(e, data) =>
-                  setSubtitlePosition({ x: data.x, y: data.y })
-                }
-                bounds="parent"
-              >
-                <div
-                  className="cursor-move space-y-1"
-                  style={{
-                    position: "absolute",
-                    left: "50%",
-                    top: "50%",
-                    transform: "translate(-50%, -50%)",
-                    zIndex: 50,
-                  }}
+              {!subtitledVideoUrl && (
+                <Draggable
+                  position={subtitlePosition}
+                  onDrag={(e, data) =>
+                    setSubtitlePosition({ x: data.x, y: data.y })
+                  }
+                  bounds="parent"
                 >
                   <div
-                    className="px-4 py-1.5 rounded-full font-medium whitespace-nowrap"
+                    className="cursor-move space-y-1"
                     style={{
-                      color: subtitleColors.line1.text,
-                      backgroundColor: subtitleColors.line1.background,
-                      fontFamily: subtitleFont,
-                      fontSize: `${subtitleSize}px`,
+                      position: "absolute",
+                      left: "50%",
+                      top: "50%",
+                      transform: "translate(-50%, -50%)",
+                      zIndex: 50,
                     }}
                   >
-                    <p>done in</p>
-                  </div>
-                  <div
-                    className="px-4 py-1.5 rounded-full font-medium whitespace-nowrap"
-                    style={{
-                      color: subtitleColors.line2.text,
-                      backgroundColor: subtitleColors.line2.background,
-                      fontFamily: subtitleFont,
-                      fontSize: `${subtitleSize}px`,
-                    }}
-                  >
-                    <p>days. AI</p>
-                  </div>
-                </div>
-              </Draggable>
-            )}
-
-            {/* Position Guide */}
-            <div
-              className="absolute inset-0 pointer-events-none"
-              style={{ zIndex: 40 }}
-            >
-              {/* <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-gray-500 text-sm bg-black/50 px-3 py-1 rounded-full">
-                  Drag subtitles to position them
-                </div>
-              </div> */}
-            </div>
-          </div>
-
-          <div className="flex gap-3">
-            <button
-              onClick={handleRemoveVideo}
-              className="flex-1 px-4 py-2 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors"
-            >
-              Remove Video
-            </button>
-            <label className="flex-1 flex items-center justify-center px-4 py-2 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 rounded-lg cursor-pointer transition-colors">
-              Change Video
-              <input
-                type="file"
-                accept="video/*"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-            </label>
-          </div>
-        </div>
-
-        {/* Right side - Subtitle Customization */}
-        <div>
-          <div className="bg-gray-900/50 rounded-lg border border-gray-700/50 p-4">
-            <h2 className="text-xl font-semibold text-white mb-4">
-              Subtitle Customization
-            </h2>
-
-            {/* Size Control */}
-            <div className="mb-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-400">Size</span>
-                <span className="text-sm text-gray-400">{subtitleSize}px</span>
-              </div>
-              <input
-                type="range"
-                min="8"
-                max="32"
-                step="0.5"
-                value={subtitleSize}
-                onChange={(e) => setSubtitleSize(Number(e.target.value))}
-                className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
-              />
-            </div>
-
-            {/* Preview and Customizer */}
-            <div className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden">
-              <div className="absolute inset-0">
-                {videoPreview && (
-                  <video
-                    src={videoPreview}
-                    className="w-full h-full"
-                    controls={false}
-                    muted
-                  />
-                )}
-              </div>
-
-              {/* Subtitle Customizer */}
-              <SubtitleCustomizer
-                subtitleColors={subtitleColors}
-                subtitleFont={subtitleFont}
-                subtitlePosition={subtitlePosition}
-                onColorChange={(color, type) => {
-                  switch (type) {
-                    case "line1-text":
-                      setSubtitleColors({
-                        ...subtitleColors,
-                        line1: { ...subtitleColors.line1, text: color.hex },
-                      });
-                      break;
-                    case "line1-bg":
-                      setSubtitleColors({
-                        ...subtitleColors,
-                        line1: {
-                          ...subtitleColors.line1,
-                          background: color.hex,
-                        },
-                      });
-                      break;
-                    case "line2-text":
-                      setSubtitleColors({
-                        ...subtitleColors,
-                        line2: { ...subtitleColors.line2, text: color.hex },
-                      });
-                      break;
-                    case "line2-bg":
-                      setSubtitleColors({
-                        ...subtitleColors,
-                        line2: {
-                          ...subtitleColors.line2,
-                          background: color.hex,
-                        },
-                      });
-                      break;
-                  }
-                }}
-                onFontChange={setSubtitleFont}
-                onPositionChange={setSubtitlePosition}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Transcription Section */}
-      <div className="p-6">
-        <div className="bg-gray-900/50 rounded-lg border border-gray-700/50 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-2xl font-semibold text-white">
-              Video Transcription
-            </h3>
-            {!transcription && !isTranscribing && (
-              <button
-                onClick={() =>
-                  onUpload(
-                    currentFile!,
-                    setTranscription,
-                    setIsTranscribing,
-                    setAudioUrl
-                  )
-                }
-                className="px-6 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-              >
-                Start Transcription
-              </button>
-            )}
-          </div>
-
-          {isTranscribing && (
-            <div className="flex items-center justify-center space-x-2 text-gray-400 mb-4">
-              <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
-              <span>Transcribing...</span>
-            </div>
-          )}
-
-          <textarea
-            value={transcription}
-            onChange={(e) => setTranscription(e.target.value)}
-            className="w-full h-[400px] p-6 bg-[#0B1120] text-gray-200 rounded-lg border border-gray-800 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-lg"
-            placeholder="Transcription will appear here..."
-            disabled={isTranscribing}
-          />
-
-          {/* Generate Button */}
-          {transcription && !isTranscribing && (
-            <div className="flex justify-end mt-6">
-              <button
-                onClick={handleGenerateSubtitles}
-                disabled={isGeneratingSubtitles}
-                className={`px-8 py-3 text-white rounded-lg transition-colors flex items-center gap-2 text-lg ${
-                  isGeneratingSubtitles
-                    ? "bg-[#22C55E]/50 cursor-not-allowed"
-                    : "bg-[#22C55E] hover:bg-[#16A34A]"
-                }`}
-              >
-                {isGeneratingSubtitles ? (
-                  <>
-                    <div className="flex items-center gap-3">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
-                      <span>Generating Subtitles...</span>
+                    <div
+                      className="px-3 py-1 md:px-4 md:py-1.5 rounded-full font-medium whitespace-nowrap"
+                      style={{
+                        color: subtitleColors.line1.text,
+                        backgroundColor: subtitleColors.line1.background,
+                        fontFamily: subtitleFont,
+                        fontSize: `${subtitleSize}px`,
+                      }}
+                    >
+                      <p>done in</p>
                     </div>
-                  </>
-                ) : (
-                  <>
-                    <FontAwesomeIcon icon={faCheck} />
-                    Generate Subtitles
-                  </>
-                )}
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
+                    <div
+                      className="px-3 py-1 md:px-4 md:py-1.5 rounded-full font-medium whitespace-nowrap"
+                      style={{
+                        color: subtitleColors.line2.text,
+                        backgroundColor: subtitleColors.line2.background,
+                        fontFamily: subtitleFont,
+                        fontSize: `${subtitleSize}px`,
+                      }}
+                    >
+                      <p>days. AI</p>
+                    </div>
+                  </div>
+                </Draggable>
+              )}
 
-      {/* Add a loading overlay when generating */}
-      {isGeneratingSubtitles && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-gray-900 rounded-lg p-8 flex flex-col items-center gap-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#22C55E] border-t-transparent" />
-            <div className="text-lg text-white">Generating Subtitles...</div>
-            <div className="text-sm text-gray-400">
-              This may take a few moments
+              {/* Position Guide */}
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{ zIndex: 40 }}
+              >
+                {/* <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-gray-500 text-sm bg-black/50 px-3 py-1 rounded-full">
+                    Drag subtitles to position them
+                  </div>
+                </div> */}
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={handleRemoveVideo}
+                className="px-4 py-2 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors"
+              >
+                Remove Video
+              </button>
+              <label className="flex items-center justify-center px-4 py-2 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 rounded-lg cursor-pointer transition-colors">
+                Change Video
+                <input
+                  type="file"
+                  accept="video/*"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+              </label>
+            </div>
+
+            {/* Subtitle Customizer - Mobile Friendly */}
+            <div className="block md:hidden">
+              <div className="bg-gray-900/90 backdrop-blur-sm rounded-lg border border-gray-700/50 p-4">
+                <div className="space-y-4">
+                  {/* Size Control */}
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <FontAwesomeIcon
+                          icon={faTextHeight}
+                          className="text-gray-400"
+                        />
+                        <span className="text-sm text-gray-400">Size</span>
+                      </div>
+                      <span className="text-sm text-gray-400">
+                        {subtitleSize}px
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="5"
+                      max="32"
+                      step="0.5"
+                      value={subtitleSize}
+                      onChange={(e) => setSubtitleSize(Number(e.target.value))}
+                      className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                    />
+                  </div>
+
+                  {/* Mobile Subtitle Customizer */}
+                  <SubtitleCustomizer
+                    subtitleColors={subtitleColors}
+                    subtitleFont={subtitleFont}
+                    subtitlePosition={subtitlePosition}
+                    onColorChange={(color, type) => {
+                      switch (type) {
+                        case "line1-text":
+                          setSubtitleColors({
+                            ...subtitleColors,
+                            line1: { ...subtitleColors.line1, text: color.hex },
+                          });
+                          break;
+                        case "line1-bg":
+                          setSubtitleColors({
+                            ...subtitleColors,
+                            line1: {
+                              ...subtitleColors.line1,
+                              background: color.hex,
+                            },
+                          });
+                          break;
+                        case "line2-text":
+                          setSubtitleColors({
+                            ...subtitleColors,
+                            line2: { ...subtitleColors.line2, text: color.hex },
+                          });
+                          break;
+                        case "line2-bg":
+                          setSubtitleColors({
+                            ...subtitleColors,
+                            line2: {
+                              ...subtitleColors.line2,
+                              background: color.hex,
+                            },
+                          });
+                          break;
+                      }
+                    }}
+                    onFontChange={setSubtitleFont}
+                    onPositionChange={setSubtitlePosition}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right side - Controls Section */}
+          <div className="space-y-4 md:space-y-6">
+            {/* Desktop Subtitle Customizer */}
+            <div className="hidden md:block">
+              <div className="bg-gray-900/90 backdrop-blur-sm rounded-lg border border-gray-700/50 p-4">
+                <div className="space-y-4">
+                  {/* Size Control */}
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <FontAwesomeIcon
+                          icon={faTextHeight}
+                          className="text-gray-400"
+                        />
+                        <span className="text-sm text-gray-400">Size</span>
+                      </div>
+                      <span className="text-sm text-gray-400">
+                        {subtitleSize}px
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="5"
+                      max="32"
+                      step="0.5"
+                      value={subtitleSize}
+                      onChange={(e) => setSubtitleSize(Number(e.target.value))}
+                      className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                    />
+                  </div>
+
+                  {/* Desktop Subtitle Customizer */}
+                  <SubtitleCustomizer
+                    subtitleColors={subtitleColors}
+                    subtitleFont={subtitleFont}
+                    subtitlePosition={subtitlePosition}
+                    onColorChange={(color, type) => {
+                      switch (type) {
+                        case "line1-text":
+                          setSubtitleColors({
+                            ...subtitleColors,
+                            line1: { ...subtitleColors.line1, text: color.hex },
+                          });
+                          break;
+                        case "line1-bg":
+                          setSubtitleColors({
+                            ...subtitleColors,
+                            line1: {
+                              ...subtitleColors.line1,
+                              background: color.hex,
+                            },
+                          });
+                          break;
+                        case "line2-text":
+                          setSubtitleColors({
+                            ...subtitleColors,
+                            line2: { ...subtitleColors.line2, text: color.hex },
+                          });
+                          break;
+                        case "line2-bg":
+                          setSubtitleColors({
+                            ...subtitleColors,
+                            line2: {
+                              ...subtitleColors.line2,
+                              background: color.hex,
+                            },
+                          });
+                          break;
+                      }
+                    }}
+                    onFontChange={setSubtitleFont}
+                    onPositionChange={setSubtitlePosition}
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      )}
+      </div>
+
+      {/* Full-width Transcription Section */}
+      <div className="bg-gray-800/30 rounded-2xl backdrop-blur-sm border border-gray-700">
+        <div className="p-4 md:p-6">
+          <div className="bg-gray-900/50 rounded-lg border border-gray-700/50 p-4 md:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 md:mb-6 gap-3">
+              <h3 className="text-xl md:text-2xl font-semibold text-white">
+                Video Transcription
+              </h3>
+              {!transcription && !isTranscribing && (
+                <button
+                  onClick={() =>
+                    onUpload(
+                      currentFile!,
+                      setTranscription,
+                      setIsTranscribing,
+                      setAudioUrl
+                    )
+                  }
+                  className="px-4 py-2 md:px-6 md:py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm md:text-base"
+                >
+                  Start Transcription
+                </button>
+              )}
+            </div>
+
+            {isTranscribing && (
+              <div className="flex items-center justify-center space-x-2 text-gray-400 mb-4">
+                <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
+                <span>Transcribing...</span>
+              </div>
+            )}
+
+            <textarea
+              value={transcription}
+              onChange={(e) => setTranscription(e.target.value)}
+              className="w-full h-[250px] md:h-[300px] lg:h-[400px] p-4 md:p-6 bg-[#0B1120] text-gray-200 rounded-lg border border-gray-800 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-base md:text-lg"
+              placeholder="Transcription will appear here..."
+              disabled={isTranscribing}
+            />
+
+            {/* Generate Button - Mobile Friendly */}
+            {transcription && !isTranscribing && (
+              <div className="flex justify-end mt-4 md:mt-6">
+                <button
+                  onClick={handleGenerateSubtitles}
+                  disabled={isGeneratingSubtitles}
+                  className={`px-4 py-2 md:px-8 md:py-3 text-white rounded-lg transition-colors flex items-center gap-2 text-sm md:text-lg ${
+                    isGeneratingSubtitles
+                      ? "bg-[#22C55E]/50 cursor-not-allowed"
+                      : "bg-[#22C55E] hover:bg-[#16A34A]"
+                  }`}
+                >
+                  {isGeneratingSubtitles ? (
+                    <>
+                      <div className="flex items-center gap-2 md:gap-3">
+                        <div className="animate-spin rounded-full h-4 w-4 md:h-5 md:w-5 border-b-2 border-white" />
+                        <span>Generating...</span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <FontAwesomeIcon icon={faCheck} />
+                      Generate Subtitles
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
