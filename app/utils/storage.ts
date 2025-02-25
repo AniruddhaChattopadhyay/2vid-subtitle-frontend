@@ -1,8 +1,9 @@
 import { Storage } from '@google-cloud/storage'
 import fs from "fs"
 import path from "path"
+import { tmpdir } from 'os'
 
-export async function uploadToGCS(file: File,type: String): Promise<string> {
+export async function uploadToGCS(file: Blob, type: String): Promise<string> {
   // Initialize Google Cloud Storage
   console.log("hi there1")
   const storage = new Storage({
@@ -18,23 +19,25 @@ export async function uploadToGCS(file: File,type: String): Promise<string> {
   // Save file to temporary location
   const bytes = await file.arrayBuffer()
   const buffer = Buffer.from(bytes)
-  const tempFilePath = path.join('/tmp', file.name)
+  // Generate a unique filename since Blobs don't have names
+  const filename = `${type}-${Date.now()}.mp3`
+  const tempFilePath = path.join(tmpdir(), filename)
   fs.writeFileSync(tempFilePath, buffer)
 
   try {
     // Generate unique filename
     let fileName: string;
     if (type === 'video') {
-      fileName = `videos-${Date.now()}-${file.name}`;
+      fileName = `videos-${Date.now()}.mp3`;
     } else {
-      fileName = `audios-${Date.now()}-${file.name}`;
+      fileName = `audios-${Date.now()}.mp3`;
     }
     
     // Upload file to Google Cloud Storage
     await bucket.upload(tempFilePath, {
       destination: fileName,
       metadata: {
-        contentType: file.type,
+        contentType: 'audio/mp3',
       },
     })
 

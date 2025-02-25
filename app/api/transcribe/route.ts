@@ -5,6 +5,8 @@ import { join } from 'path'
 import { tmpdir } from 'os'
 import { writeFile, readFile, unlink } from 'fs/promises'
 import { uploadToGCS } from "../../utils/storage"
+import fs from "fs";
+
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -38,11 +40,13 @@ export async function POST(req: NextRequest) {
 
     // Create file for OpenAI API
     const audioArray = await readFile(outputPath)
-    const audioFile = new File([audioArray], 'audio.mp3', { type: 'audio/mp3' })
-    const audioUrl = await uploadToGCS(audioFile,"audio")
+    const audioBlob = new Blob([audioArray], { type: 'audio/mp3' })
+
+
+    const audioUrl = await uploadToGCS(audioBlob,"audio")
     
     const transcription = await openai.audio.transcriptions.create({
-      file: audioFile,
+      file: fs.createReadStream(outputPath),
       model: "whisper-1",
     })
 
