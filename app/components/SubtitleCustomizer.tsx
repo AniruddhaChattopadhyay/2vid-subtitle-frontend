@@ -54,22 +54,22 @@ export default function SubtitleCustomizer({
               <div className="flex gap-2">
                 <button
                   onClick={() => setActiveColorPicker("line1-text")}
-                  className="flex-1 h-8 rounded-lg border border-gray-700 flex items-center justify-center gap-2 hover:border-indigo-500 transition-colors relative overflow-hidden"
+                  className="flex-1 h-8 rounded-lg border border-gray-700 flex items-center justify-center hover:border-indigo-500 transition-colors relative overflow-hidden"
                   style={{ backgroundColor: subtitleColors.line1.text }}
                 >
                   <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/10"></div>
-                  <span className="text-xs font-medium bg-gray-900/80 px-2 py-0.5 rounded text-white relative z-10">
+                  <span className="text-[10px] sm:text-xs font-medium bg-gray-900/80 px-1.5 sm:px-2 py-0.5 rounded text-white relative z-10 truncate max-w-[90%]">
                     Text
                   </span>
                 </button>
                 <button
                   onClick={() => setActiveColorPicker("line1-bg")}
-                  className="flex-1 h-8 rounded-lg border border-gray-700 flex items-center justify-center gap-2 hover:border-indigo-500 transition-colors relative overflow-hidden"
+                  className="flex-1 h-8 rounded-lg border border-gray-700 flex items-center justify-center hover:border-indigo-500 transition-colors relative overflow-hidden"
                   style={{ backgroundColor: subtitleColors.line1.background }}
                 >
                   <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/10"></div>
-                  <span className="text-xs font-medium bg-gray-900/80 px-2 py-0.5 rounded text-white relative z-10">
-                    Background
+                  <span className="text-[10px] sm:text-xs font-medium bg-gray-900/80 px-1.5 sm:px-2 py-0.5 rounded text-white relative z-10 truncate max-w-[90%]">
+                    BG
                   </span>
                 </button>
               </div>
@@ -81,22 +81,22 @@ export default function SubtitleCustomizer({
               <div className="flex gap-2">
                 <button
                   onClick={() => setActiveColorPicker("line2-text")}
-                  className="flex-1 h-8 rounded-lg border border-gray-700 flex items-center justify-center gap-2 hover:border-indigo-500 transition-colors relative overflow-hidden"
+                  className="flex-1 h-8 rounded-lg border border-gray-700 flex items-center justify-center hover:border-indigo-500 transition-colors relative overflow-hidden"
                   style={{ backgroundColor: subtitleColors.line2.text }}
                 >
                   <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/10"></div>
-                  <span className="text-xs font-medium bg-gray-900/80 px-2 py-0.5 rounded text-white relative z-10">
+                  <span className="text-[10px] sm:text-xs font-medium bg-gray-900/80 px-1.5 sm:px-2 py-0.5 rounded text-white relative z-10 truncate max-w-[90%]">
                     Text
                   </span>
                 </button>
                 <button
                   onClick={() => setActiveColorPicker("line2-bg")}
-                  className="flex-1 h-8 rounded-lg border border-gray-700 flex items-center justify-center gap-2 hover:border-indigo-500 transition-colors relative overflow-hidden"
+                  className="flex-1 h-8 rounded-lg border border-gray-700 flex items-center justify-center hover:border-indigo-500 transition-colors relative overflow-hidden"
                   style={{ backgroundColor: subtitleColors.line2.background }}
                 >
                   <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/10"></div>
-                  <span className="text-xs font-medium bg-gray-900/80 px-2 py-0.5 rounded text-white relative z-10">
-                    Background
+                  <span className="text-[10px] sm:text-xs font-medium bg-gray-900/80 px-1.5 sm:px-2 py-0.5 rounded text-white relative z-10 truncate max-w-[90%]">
+                    BG
                   </span>
                 </button>
               </div>

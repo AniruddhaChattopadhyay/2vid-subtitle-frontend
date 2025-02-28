@@ -16,6 +16,7 @@ import {
   faSliders,
   faFileAlt,
   faMicrophone,
+  faDownload,
 } from "@fortawesome/free-solid-svg-icons";
 import React from "react";
 import { ChromePicker, ColorResult } from "react-color";
@@ -121,49 +122,46 @@ export default function VideoUpload({ onUpload }: VideoUploadProps) {
 
     try {
       console.log("Generating subtitles...");
-      // Get video element dimensions for calculating relative position
       const videoElement = document.querySelector("video");
       const videoRect = videoElement?.getBoundingClientRect();
 
-      // Calculate relative position (0-1 range)
-      const relativePosition = {
-        x: videoRect
-          ? (subtitlePosition.x - videoRect.left) / videoRect.width
-          : 0.5,
-        y: videoRect
-          ? Math.min(
-              1,
-              Math.max(
-                0,
-                (subtitlePosition.y + videoRect.height / 2) / videoRect.height
-              )
-            )
-          : 0.5,
+      if (!videoRect) {
+        console.error("Could not get video dimensions");
+        return;
+      }
+
+      // Calculate center of video
+      const centerX = videoRect.width / 2;
+
+      // Calculate position as percentage from center for x
+      // This will scale properly across different video sizes
+      const scalablePosition = {
+        // X: percentage from center (-50% to +50%)
+        // Negative means left of center, positive means right of center
+        x: ((subtitlePosition.x - centerX) / videoRect.width) * 100,
+
+        // Y: keep the original relative position calculation (0-1 range)
+        y: Math.min(
+          1,
+          Math.max(
+            0,
+            (subtitlePosition.y + videoRect.height / 2) / videoRect.height
+          )
+        ),
       };
 
-      // Debug log
+      console.log("Video dimensions:", videoRect.width, "x", videoRect.height);
+      console.log("Center X point:", centerX);
       console.log(
-        "Subtitle Position Y (relative to draggable parent):",
+        "Subtitle position (from top-left):",
+        subtitlePosition.x,
         subtitlePosition.y
       );
-      console.log("Video Rect Top (from top of viewport):", videoRect?.top);
-      console.log("Video Rect Height:", videoRect?.height);
-      console.log("Relative Position Y:", relativePosition.y);
-
-      // Additional debug logs for window and element positions
-      console.log("window.scrollY:", window.scrollY);
-      if (videoElement) {
-        console.log(
-          "videoElement.offsetTop (relative to offsetParent):",
-          videoElement.offsetTop
-        );
-        console.log(
-          "videoElement.clientTop (border width):",
-          videoElement.clientTop
-        );
-      } else {
-        console.log("videoElement is null");
-      }
+      console.log(
+        "Scalable position - x as % from center, y as relative position:",
+        scalablePosition.x,
+        scalablePosition.y
+      );
 
       const formData = new FormData();
       formData.append("video", currentFile);
@@ -171,7 +169,7 @@ export default function VideoUpload({ onUpload }: VideoUploadProps) {
       formData.append("audioUrl", audioUrl);
       formData.append("subtitleColors", JSON.stringify(subtitleColors));
       formData.append("subtitleFont", subtitleFont);
-      formData.append("subtitlePosition", JSON.stringify(relativePosition));
+      formData.append("subtitlePosition", JSON.stringify(scalablePosition));
       formData.append("subtitleSize", subtitleSize.toString());
 
       const response = await fetch("/api/add-subtitles", {
@@ -263,6 +261,58 @@ export default function VideoUpload({ onUpload }: VideoUploadProps) {
     };
   }, [videoPreview]);
 
+  // Modify the handleDownload function to handle both local and external URLs
+  const handleDownload = async () => {
+    const videoUrl = subtitledVideoUrl || videoPreview;
+    if (!videoUrl) return;
+
+    try {
+      let blob;
+
+      if (subtitledVideoUrl) {
+        // For subtitled video, use our backend API to handle the download
+        const response = await fetch("/api/download-video", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ videoUrl: subtitledVideoUrl }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to download video");
+        }
+
+        blob = await response.blob();
+      } else {
+        // For original video (local URL), use simple fetch
+        const response = await fetch(videoUrl);
+        blob = await response.blob();
+      }
+
+      // Create a temporary link element
+      const link = document.createElement("a");
+      link.href = window.URL.createObjectURL(blob);
+
+      // Set suggested filename based on whether it's subtitled or original
+      const filename = subtitledVideoUrl
+        ? "subtitled-video.mp4"
+        : "original-video.mp4";
+      link.download = filename;
+
+      // Append to body, click and remove
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Clean up the URL
+      window.URL.revokeObjectURL(link.href);
+    } catch (error) {
+      console.error("Error downloading video:", error);
+      alert("Failed to download video. Please try again.");
+    }
+  };
+
   if (!videoPreview) {
     return (
       <div className="flex flex-col items-center justify-center mt-8 md:mt-20 px-4">
@@ -324,6 +374,23 @@ export default function VideoUpload({ onUpload }: VideoUploadProps) {
                 controls
                 controlsList="nodownload"
               />
+
+              {/* Update the download button with responsive classes */}
+              <button
+                onClick={handleDownload}
+                className="absolute top-2 right-2 md:top-4 md:right-4 px-2 py-1.5 md:px-4 md:py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors flex items-center gap-1 md:gap-2 text-xs md:text-base font-medium shadow-lg"
+              >
+                <FontAwesomeIcon
+                  icon={faDownload}
+                  className="text-xs md:text-base"
+                />
+                <span className="hidden sm:inline">
+                  {subtitledVideoUrl
+                    ? "Download with Subtitles"
+                    : "Download Original"}
+                </span>
+                <span className="sm:hidden">Download</span>
+              </button>
 
               {!subtitledVideoUrl && (
                 <Draggable

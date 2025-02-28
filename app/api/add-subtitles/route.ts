@@ -18,6 +18,8 @@ export async function POST(req: NextRequest) {
   const subtitlePosition = JSON.parse(formData.get("subtitlePosition") as string)
   const subtitleColors = JSON.parse(formData.get("subtitleColors") as string)
   const subtitleSize = parseInt(formData.get("subtitleSize") as string)
+  const subtitleAlignment = formData.get("subtitleAlignment") as string
+  const videoAspectRatio = parseFloat(formData.get("videoAspectRatio") as string)
   console.log(video)
   console.log(audioUrl)
   console.log(transcription)
@@ -50,20 +52,20 @@ export async function POST(req: NextRequest) {
        cache: 'no-store',
        // @ts-ignore - Next.js types don't include this option but it's valid
        rejectUnauthorized: false
-
     })
+    
     if (!aiResponse.ok) {
       throw new Error('AI backend request failed')
     }
 
     const aiData = await aiResponse.json()
     console.log(aiData)
+
     return NextResponse.json({ subtitledVideoUrl: aiData.video_link})
   } catch (error) {
     console.error('Error processing video:', error)
     return NextResponse.json({ error: 'Failed to process video' }, { status: 500 })
   }
-   
 }
 
 
