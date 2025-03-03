@@ -7,7 +7,8 @@ export default function Home() {
     file: File,
     setTranscription: (text: string) => void,
     setIsTranscribing: (value: boolean) => void,
-    setAudioUrl: (url: string) => void
+    setAudioUrl: (url: string) => void,
+    setUniqueId: (id: string) => void
   ) => {
     const formData = new FormData();
     formData.append("video", file);
@@ -20,9 +21,10 @@ export default function Home() {
       });
       const data = await response.json();
 
-      if (data.transcription && data.audioUrl) {
+      if (data.transcription && data.audioUrl && data.uniqueId) {
         setTranscription(data.transcription);
         setAudioUrl(data.audioUrl);
+        setUniqueId(data.uniqueId);
       } else if (data.error) {
         console.error("Transcription error:", data.error);
       }

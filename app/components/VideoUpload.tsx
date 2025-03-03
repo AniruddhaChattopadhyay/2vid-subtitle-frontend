@@ -28,7 +28,8 @@ interface VideoUploadProps {
     file: File,
     setTranscription: (text: string) => void,
     setIsTranscribing: (value: boolean) => void,
-    setAudioUrl: (url: string) => void
+    setAudioUrl: (url: string) => void,
+    setUniqueId: (id: string) => void
   ) => void;
 }
 
@@ -58,6 +59,7 @@ export default function VideoUpload({ onUpload }: VideoUploadProps) {
   const [currentFile, setCurrentFile] = useState<File | null>(null);
   const [isGeneratingSubtitles, setIsGeneratingSubtitles] = useState(false);
   const [audioUrl, setAudioUrl] = useState("");
+  const [uniqueId, setUniqueId] = useState("");
   const [subtitledVideoUrl, setSubtitledVideoUrl] = useState<string | null>(
     null
   );
@@ -108,7 +110,7 @@ export default function VideoUpload({ onUpload }: VideoUploadProps) {
       setSubtitlePosition({ x: 0, y: 0 });
 
       // Start the transcription process
-      onUpload(file, setTranscription, setIsTranscribing, setAudioUrl);
+      onUpload(file, setTranscription, setIsTranscribing, setAudioUrl, setUniqueId);
     }
   };
 
@@ -171,6 +173,7 @@ export default function VideoUpload({ onUpload }: VideoUploadProps) {
       formData.append("subtitleFont", subtitleFont);
       formData.append("subtitlePosition", JSON.stringify(scalablePosition));
       formData.append("subtitleSize", subtitleSize.toString());
+      formData.append("uniqueId",uniqueId)
 
       const response = await fetch("/api/add-subtitles", {
         method: "POST",
@@ -573,7 +576,8 @@ export default function VideoUpload({ onUpload }: VideoUploadProps) {
                       currentFile!,
                       setTranscription,
                       setIsTranscribing,
-                      setAudioUrl
+                      setAudioUrl,
+                      setUniqueId
                     )
                   }
                   className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm md:text-base font-medium flex items-center gap-2 shadow-lg shadow-indigo-600/20"

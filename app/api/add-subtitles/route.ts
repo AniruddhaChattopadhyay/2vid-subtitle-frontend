@@ -13,6 +13,7 @@ export async function POST(req: NextRequest) {
   const video = formData.get("video") as File
   const audioUrl = formData.get("audioUrl") as string
   const transcription = formData.get("transcription") as string
+  const uniqueId = formData.get("uniqueId") as string
   const subtitleColor = formData.get("subtitleColor") as string
   const subtitleFont = formData.get("subtitleFont") as string
   const subtitlePosition = JSON.parse(formData.get("subtitlePosition") as string)
@@ -29,7 +30,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const videoUrl = await uploadToGCS(video,"video")
+    const videoUrl = await uploadToGCS(video,"video",uniqueId)
     const aiResponse = await fetch(`${process.env.AI_BACKEND_URL}/subtitle`!, {
     method: 'POST',
       headers: {
@@ -38,6 +39,7 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         video_url: videoUrl,
         audio_url: audioUrl,
+        id: uniqueId,
         script: transcription,
         subtitle_style: {
           font: subtitleFont,

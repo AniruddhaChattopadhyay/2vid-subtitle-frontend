@@ -15,6 +15,7 @@ export default function VideoUploader() {
   const [transcription, setTranscription] = useState<string>("")
   const [audioUrl,setAudioUrl] = useState<string>("")
   const [isTranscribing, setIsTranscribing] = useState(false)
+  const [uniqueId, setUniqueId] = useState("");
   const [isAddingSubtitles, setIsAddingSubtitles] = useState(false)
   const [subtitledVideoUrl, setSubtitledVideoUrl] = useState<string | null>(null)
 
@@ -41,6 +42,7 @@ export default function VideoUploader() {
       const data = await response.json()
       setTranscription(data.transcription)
       setAudioUrl(data.audioUrl)
+      setUniqueId(data.uniqueId)
     } catch (error) {
       console.error("Error transcribing video:", error)
     } finally {
@@ -56,6 +58,7 @@ export default function VideoUploader() {
     formData.append("video", videoFile)
     formData.append("transcription", transcription)
     formData.append("audioUrl",audioUrl)
+    formData.append("uniqueId",uniqueId)
 
     try {
       const response = await fetch("/api/add-subtitles", {

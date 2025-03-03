@@ -3,9 +3,8 @@ import fs from "fs"
 import path from "path"
 import { tmpdir } from 'os'
 
-export async function uploadToGCS(file: Blob, type: String): Promise<string> {
+export async function uploadToGCS(file: Blob, type: String,uniqueId:string): Promise<string> {
   // Initialize Google Cloud Storage
-  console.log("hi there1")
   const storage = new Storage({
     projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
     credentials: JSON.parse(fs.readFileSync('./valid-flow-446606-m2-212ba29fbb71.json', 'utf8'))
@@ -20,7 +19,8 @@ export async function uploadToGCS(file: Blob, type: String): Promise<string> {
   const bytes = await file.arrayBuffer()
   const buffer = Buffer.from(bytes)
   // Generate a unique filename since Blobs don't have names
-  const filename = `${type}-${Date.now()}.mp3`
+  const extension = type === 'video' ? '.mp4' : '.mp3'
+  const filename = `${type}-${uniqueId}${extension}`
   const tempFilePath = path.join(tmpdir(), filename)
   fs.writeFileSync(tempFilePath, buffer)
 
@@ -28,9 +28,9 @@ export async function uploadToGCS(file: Blob, type: String): Promise<string> {
     // Generate unique filename
     let fileName: string;
     if (type === 'video') {
-      fileName = `videos-${Date.now()}.mp3`;
+      fileName = `videos-${uniqueId}.mp4`;
     } else {
-      fileName = `audios-${Date.now()}.mp3`;
+      fileName = `audios-${uniqueId}.mp3`;
     }
     
     // Upload file to Google Cloud Storage

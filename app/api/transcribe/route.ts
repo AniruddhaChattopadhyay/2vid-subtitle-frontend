@@ -6,6 +6,7 @@ import { tmpdir } from 'os'
 import { writeFile, readFile, unlink } from 'fs/promises'
 import { uploadToGCS } from "../../utils/storage"
 import fs from "fs";
+import { v4 as uuidv4 } from 'uuid';
 
 
 const openai = new OpenAI({
@@ -22,10 +23,13 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    // Generate unique file names
+    const uniqueId = uuidv4();
+    const inputPath = join(tmpdir(), `${uniqueId}-input.mp4`);
+    const outputPath = join(tmpdir(), `${uniqueId}-output.mp3`);
+
     // Save video to temp file
     const videoBuffer = Buffer.from(await video.arrayBuffer())
-    const inputPath = join(tmpdir(), 'input.mp4')
-    const outputPath = join(tmpdir(), 'output.mp3')
     await writeFile(inputPath, videoBuffer)
 
     // Convert video to audio
@@ -43,7 +47,7 @@ export async function POST(req: NextRequest) {
     const audioBlob = new Blob([audioArray], { type: 'audio/mp3' })
 
 
-    const audioUrl = await uploadToGCS(audioBlob,"audio")
+    const audioUrl = await uploadToGCS(audioBlob,"audio",uniqueId)
     
     const transcription = await openai.audio.transcriptions.create({
       file: fs.createReadStream(outputPath),
@@ -56,7 +60,7 @@ export async function POST(req: NextRequest) {
       unlink(outputPath)
     ]).catch(console.error)
 
-    return NextResponse.json({ transcription: transcription.text, audioUrl: audioUrl })
+    return NextResponse.json({ transcription: transcription.text, audioUrl: audioUrl, uniqueId: uniqueId })
   } catch (error) {
     console.error("Error processing video:", error)
     return NextResponse.json({ error: "Error processing video" }, { status: 500 })
