@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUpload,
@@ -83,6 +83,9 @@ export default function VideoUpload({ onUpload }: VideoUploadProps) {
   const [subtitleFont, setSubtitleFont] = useState<SubtitleFont>("Arial");
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [subtitleSize, setSubtitleSize] = useState<number>(5);
+  const [showTranscriptionModal, setShowTranscriptionModal] = useState(false);
+  const textEditorRef = useRef<HTMLTextAreaElement>(null);
+  const videoComponentRef = useRef<HTMLDivElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -109,8 +112,27 @@ export default function VideoUpload({ onUpload }: VideoUploadProps) {
       // Reset subtitle position to center
       setSubtitlePosition({ x: 0, y: 0 });
 
-      // Start the transcription process
-      onUpload(file, setTranscription, setIsTranscribing, setAudioUrl, setUniqueId);
+      // Start the transcription process and show the modal
+      setShowTranscriptionModal(true);
+      onUpload(
+        file,
+        setTranscription,
+        (isTranscribing) => {
+          setIsTranscribing(isTranscribing);
+          // When transcription is complete, scroll to the text editor
+          if (!isTranscribing && textEditorRef.current) {
+            setTimeout(() => {
+              textEditorRef.current?.scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+              });
+              setShowTranscriptionModal(false);
+            }, 1000);
+          }
+        },
+        setAudioUrl,
+        setUniqueId
+      );
     }
   };
 
@@ -172,8 +194,8 @@ export default function VideoUpload({ onUpload }: VideoUploadProps) {
       formData.append("subtitleColors", JSON.stringify(subtitleColors));
       formData.append("subtitleFont", subtitleFont);
       formData.append("subtitlePosition", JSON.stringify(scalablePosition));
-      formData.append("subtitleSize", subtitleSize.toString());
-      formData.append("uniqueId",uniqueId)
+      formData.append("fontSize", subtitleSize.toString());
+      formData.append("uniqueId", uniqueId);
 
       const response = await fetch("/api/add-subtitles", {
         method: "POST",
@@ -188,6 +210,13 @@ export default function VideoUpload({ onUpload }: VideoUploadProps) {
 
       if (data.subtitledVideoUrl) {
         setSubtitledVideoUrl(data.subtitledVideoUrl);
+        // Scroll to video component after subtitle generation
+        setTimeout(() => {
+          videoComponentRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+        }, 1000);
       }
     } catch (error) {
       console.error("Error generating subtitles:", error);
@@ -361,7 +390,7 @@ export default function VideoUpload({ onUpload }: VideoUploadProps) {
       <div className="bg-gradient-to-br from-gray-900/95 via-indigo-950/90 to-gray-900/95 rounded-2xl backdrop-blur-sm border border-indigo-800/30 shadow-xl">
         <div className="grid md:grid-cols-2 gap-6 p-6 md:p-8">
           {/* Left side - Video Preview Section */}
-          <div className="space-y-5">
+          <div ref={videoComponentRef} className="space-y-5">
             <h2 className="text-xl font-semibold text-white mb-2 flex items-center gap-2">
               <span className="w-8 h-8 bg-indigo-500/20 rounded-full flex items-center justify-center text-indigo-400">
                 <FontAwesomeIcon icon={faVideo} />
@@ -377,23 +406,6 @@ export default function VideoUpload({ onUpload }: VideoUploadProps) {
                 controls
                 controlsList="nodownload"
               />
-
-              {/* Update the download button with responsive classes */}
-              <button
-                onClick={handleDownload}
-                className="absolute top-2 right-2 md:top-4 md:right-4 px-2 py-1.5 md:px-4 md:py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors flex items-center gap-1 md:gap-2 text-xs md:text-base font-medium shadow-lg"
-              >
-                <FontAwesomeIcon
-                  icon={faDownload}
-                  className="text-xs md:text-base"
-                />
-                <span className="hidden sm:inline">
-                  {subtitledVideoUrl
-                    ? "Download with Subtitles"
-                    : "Download Original"}
-                </span>
-                <span className="sm:hidden">Download</span>
-              </button>
 
               {!subtitledVideoUrl && (
                 <Draggable
@@ -440,17 +452,17 @@ export default function VideoUpload({ onUpload }: VideoUploadProps) {
               )}
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col sm:flex-row gap-4">
               <button
                 onClick={handleRemoveVideo}
-                className="px-4 py-2.5 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors flex items-center justify-center gap-2 font-medium"
+                className="flex items-center justify-center gap-2 px-5 py-3 bg-[#1F1625] hover:bg-[#2A1C31] text-red-400 rounded-xl transition-all duration-300 font-medium border border-red-500/20 shadow-lg shadow-red-500/5"
               >
-                <FontAwesomeIcon icon={faTrash} />
-                Remove Video
+                <FontAwesomeIcon icon={faTrash} className="text-sm" />
+                <span>Remove Video</span>
               </button>
-              <label className="flex items-center justify-center px-4 py-2.5 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 rounded-lg cursor-pointer transition-colors font-medium">
-                <FontAwesomeIcon icon={faExchangeAlt} className="mr-2" />
-                Change Video
+              <label className="flex items-center justify-center gap-2 px-5 py-3 bg-[#1A1E2E] hover:bg-[#232838] text-blue-400 rounded-xl transition-all duration-300 cursor-pointer font-medium border border-blue-500/20 shadow-lg shadow-blue-500/5">
+                <FontAwesomeIcon icon={faExchangeAlt} className="text-sm" />
+                <span>Change Video</span>
                 <input
                   type="file"
                   accept="video/*"
@@ -458,6 +470,16 @@ export default function VideoUpload({ onUpload }: VideoUploadProps) {
                   onChange={handleFileChange}
                 />
               </label>
+              {/* Only show download button when subtitled video is available */}
+              {subtitledVideoUrl && (
+                <button
+                  onClick={handleDownload}
+                  className="flex items-center justify-center gap-2 px-5 py-3 bg-[#162521] hover:bg-[#1C312A] text-green-400 rounded-xl transition-all duration-300 font-medium border border-green-500/20 shadow-lg shadow-green-500/5"
+                >
+                  <FontAwesomeIcon icon={faDownload} className="text-sm" />
+                  <span>Download</span>
+                </button>
+              )}
             </div>
           </div>
 
@@ -596,6 +618,7 @@ export default function VideoUpload({ onUpload }: VideoUploadProps) {
             )}
 
             <textarea
+              ref={textEditorRef}
               value={transcription}
               onChange={(e) => setTranscription(e.target.value)}
               className="w-full h-[250px] md:h-[300px] lg:h-[400px] p-5 bg-[#0B1120] text-gray-200 rounded-xl border border-gray-800 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-base md:text-lg"
@@ -648,6 +671,28 @@ export default function VideoUpload({ onUpload }: VideoUploadProps) {
             <div className="w-full bg-gray-800 h-2 rounded-full overflow-hidden mt-2">
               <div className="h-full bg-gradient-to-r from-green-500 to-emerald-600 animate-pulse rounded-full"></div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Transcription Started Modal */}
+      {showTranscriptionModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-gradient-to-b from-gray-900 to-gray-950 rounded-xl p-8 flex flex-col items-center gap-5 max-w-md mx-4 border border-indigo-800/30 shadow-2xl">
+            <div className="animate-spin rounded-full h-14 w-14 border-4 border-indigo-500 border-t-transparent"></div>
+            <div className="text-xl text-white font-medium">
+              Transcription Started
+            </div>
+            <div className="text-gray-300 text-center">
+              We're analyzing your video and creating a transcript. This may
+              take a few moments depending on the length of your video.
+            </div>
+            <button
+              onClick={() => setShowTranscriptionModal(false)}
+              className="mt-2 px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
+            >
+              Close
+            </button>
           </div>
         </div>
       )}
